@@ -1,40 +1,55 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>Funnels Mini App</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-body{
-background:#111;
-color:white;
-font-family:Arial;
-text-align:center;
-padding-top:100px;
-}
-button{
-padding:15px 25px;
-font-size:18px;
-border-radius:10px;
-border:none;
-background:#2ea6ff;
-color:white;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Funnels Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- CSS and layout trimmed in this document preview.
+       Use the full version provided by the assistant message. -->
 </head>
-
 <body>
+  <div class="app">
+    <!-- Home Screen -->
+    <section id="screen-home">
+      <h1>PvP Игра</h1>
 
-<h1>Funnels</h1>
-<p>Mini App работает</p>
+      <div class="card">
+        <h2>РУЛЕТКА</h2>
+        <p>Классическая PvP Рулетка</p>
+        <button onclick="openScreen('funnels')">Играть</button>
+      </div>
 
-<button onclick="tg.showAlert('Привет из Mini App!')">
-Нажми
-</button>
+      <div class="card">
+        <h2>ВОРОНКА</h2>
+        <p>Гравитационная PvP Игра</p>
+        <button onclick="openScreen('voronka')">Играть</button>
+      </div>
+    </section>
+
+    <!-- Funnels Screen -->
+    <section id="screen-funnels" style="display:none">
+      <h1>FUNNELS</h1>
+      <p>Экран рулетки</p>
+      <button onclick="openScreen('home')">Назад</button>
+    </section>
+
+    <!-- Voronka Screen -->
+    <section id="screen-voronka" style="display:none">
+      <h1>ВОРОНКА</h1>
+      <p>Экран воронки</p>
+      <button onclick="openScreen('home')">Назад</button>
+    </section>
+  </div>
 
 <script>
-const tg = window.Telegram.WebApp;
-tg.expand();
+function openScreen(name){
+  document.getElementById("screen-home").style.display="none";
+  document.getElementById("screen-funnels").style.display="none";
+  document.getElementById("screen-voronka").style.display="none";
+
+  document.getElementById("screen-"+name).style.display="block";
+}
 </script>
 
 </body>
