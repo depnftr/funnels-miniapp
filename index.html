@@ -2,55 +2,738 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
   <title>Funnels Mini App</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <!-- CSS and layout trimmed in this document preview.
-       Use the full version provided by the assistant message. -->
+  <style>
+    :root {
+      --bg1: #060816;
+      --bg2: #120b35;
+      --panel: rgba(18, 18, 38, 0.82);
+      --panel-2: rgba(30, 20, 58, 0.95);
+      --text: #ffffff;
+      --muted: #b9b8d3;
+      --purple: #8d4dff;
+      --purple-2: #c26cff;
+      --blue: #2c7bff;
+      --pink: #ff43be;
+      --yellow: #ffc635;
+      --green: #79ff55;
+      --shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+      --radius: 28px;
+    }
+ 
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+ 
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: Inter, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 20%, rgba(91, 0, 255, 0.35), transparent 22%),
+        radial-gradient(circle at 80% 15%, rgba(255, 0, 212, 0.18), transparent 18%),
+        radial-gradient(circle at 70% 70%, rgba(0, 119, 255, 0.18), transparent 22%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      overflow-x: hidden;
+    }
+ 
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(#ffffffcc 1px, transparent 1px),
+        radial-gradient(#ffffff88 1px, transparent 1px);
+      background-size: 120px 120px, 180px 180px;
+      background-position: 0 0, 40px 60px;
+      opacity: 0.22;
+    }
+ 
+    .app {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100dvh;
+      padding: 14px 14px 24px;
+      position: relative;
+    }
+ 
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+ 
+    .pill {
+      background: rgba(12, 15, 30, 0.72);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 999px;
+      padding: 10px 14px;
+      color: #fff;
+      font-weight: 700;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+ 
+    .online {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+ 
+    .online-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #28ff5e;
+      box-shadow: 0 0 14px #28ff5e;
+    }
+ 
+    .screen {
+      display: none;
+      animation: fadeIn .22s ease;
+    }
+ 
+    .screen.active {
+      display: block;
+    }
+ 
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+ 
+    .title {
+      text-align: center;
+      font-size: 44px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: 1px;
+      margin: 18px 0 20px;
+      text-shadow: 0 0 20px rgba(185, 110, 255, 0.55);
+    }
+ 
+    .hero-card {
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 10% 20%, rgba(255,255,255,0.08), transparent 20%),
+        radial-gradient(circle at 80% 10%, rgba(80,180,255,0.18), transparent 25%),
+        linear-gradient(180deg, rgba(26,20,70,.96), rgba(11,9,28,.97));
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 32px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+ 
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      inset: auto 20px 0 20px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #ffca3a, transparent);
+      opacity: 0.8;
+    }
+ 
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 14px;
+      align-items: center;
+    }
+ 
+    .hero-label {
+      font-size: 44px;
+      font-weight: 900;
+      line-height: 0.95;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      text-shadow: 0 0 18px rgba(255,255,255,.22);
+    }
+ 
+    .hero-label.orange {
+      color: #ffb028;
+      text-shadow: 0 0 18px rgba(255, 176, 40, 0.45);
+    }
+ 
+    .hero-label.purple {
+      color: #c27bff;
+      text-shadow: 0 0 18px rgba(194, 123, 255, 0.45);
+    }
+ 
+    .hero-desc {
+      font-size: 20px;
+      line-height: 1.25;
+      color: #f0efff;
+      margin-bottom: 18px;
+    }
+ 
+    .big-btn {
+      appearance: none;
+      border: 0;
+      color: #1a1300;
+      font-size: 22px;
+      font-weight: 900;
+      border-radius: 999px;
+      padding: 16px 24px;
+      cursor: pointer;
+      min-width: 180px;
+      box-shadow: 0 8px 20px rgba(0,0,0,.3);
+    }
+ 
+    .big-btn.yellow {
+      background: linear-gradient(180deg, #ffe98e, #ffc533 55%, #ffae00);
+    }
+ 
+    .big-btn.purple {
+      color: #fff;
+      background: linear-gradient(180deg, #bb7dff, #8b3eff 55%, #6a1eff);
+    }
+ 
+    .mock-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+ 
+    .wheel-shell {
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      padding: 8px;
+      background: radial-gradient(circle at 40% 35%, #56c5ff, #212d9a 55%, #10143c 100%);
+      box-shadow:
+        0 0 24px rgba(92, 161, 255, 0.45),
+        inset 0 0 18px rgba(255,255,255,0.2);
+      position: relative;
+    }
+ 
+    .wheel {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      overflow: hidden;
+      background:
+        conic-gradient(
+          #ff8b22 0 45%,
+          #9be92c 45% 77%,
+          #ffd42b 77% 78%,
+          #2e8a2d 78% 86%,
+          #ff44be 86% 98%,
+          #2977ff 98% 100%
+        );
+      border: 6px solid rgba(0,0,0,0.35);
+    }
+ 
+    .wheel-center {
+      position: absolute;
+      inset: 50% auto auto 50%;
+      transform: translate(-50%, -50%);
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      background: #0f1228;
+      border: 8px solid #ff432d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 900;
+      z-index: 3;
+      box-shadow: 0 0 0 8px rgba(255, 67, 45, 0.16);
+    }
+ 
+    .wheel-pointer {
+      position: absolute;
+      top: 44%;
+      left: 50%;
+      transform: translate(-50%, -100%);
+      width: 0;
+      height: 0;
+      border-left: 30px solid transparent;
+      border-right: 30px solid transparent;
+      border-bottom: 60px solid #ff3c31;
+      z-index: 2;
+      filter: drop-shadow(0 0 10px rgba(255, 61, 49, 0.4));
+    }
+ 
+    .wheel-text {
+      position: absolute;
+      color: #fff;
+      font-weight: 900;
+      text-shadow: 0 2px 8px rgba(0,0,0,.45);
+      font-size: 16px;
+      z-index: 1;
+    }
+ 
+    .w1 { top: 34%; left: 8%; transform: rotate(-18deg); }
+    .w2 { bottom: 12%; left: 34%; }
+    .w3 { top: 6%; left: 50%; transform: translateX(-50%); }
+    .w4 { top: 28%; right: 8%; }
+    .w5 { top: 52%; right: 14%; font-size: 13px; }
+    .w6 { top: 66%; right: 24%; font-size: 12px; }
+ 
+    .funnel-shell {
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      position: relative;
+      background:
+        radial-gradient(circle at 50% 50%, #1d103f 0 12%, #39106f 14%, #2b0a59 20%, #1a0939 26%, transparent 28%),
+        radial-gradient(circle at 50% 50%, rgba(142, 0, 255, 0.85), transparent 70%);
+      box-shadow:
+        inset 0 0 24px rgba(255,255,255,.06),
+        0 0 24px rgba(164, 95, 255, .35);
+      overflow: hidden;
+      border: 8px solid rgba(32, 20, 68, 0.9);
+    }
+ 
+    .orbit {
+      position: absolute;
+      inset: 18px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 170, 80, 0.16);
+    }
+    .orbit.o2 { inset: 38px; }
+    .orbit.o3 { inset: 58px; }
+    .orbit.o4 { inset: 78px; }
+    .orbit.o5 { inset: 98px; }
+ 
+    .planet {
+      position: absolute;
+      border-radius: 50%;
+      color: #fff;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8px;
+      box-shadow: 0 0 18px rgba(255,255,255,.18);
+    }
+ 
+    .planet.big-red {
+      width: 74px; height: 74px; left: 16px; top: 92px;
+      background: radial-gradient(circle at 35% 35%, #ff8c8c, #d91515 70%);
+    }
+    .planet.big-yellow {
+      width: 92px; height: 92px; right: 12px; top: 76px;
+      background: radial-gradient(circle at 35% 35%, #ffe26d, #ff8d00 70%);
+    }
+    .planet.mid-blue {
+      width: 72px; height: 72px; left: 62px; bottom: 18px;
+      background: radial-gradient(circle at 35% 35%, #95beff, #2f5dff 70%);
+    }
+    .planet.green {
+      width: 58px; height: 58px; right: 42px; bottom: 34px;
+      background: radial-gradient(circle at 35% 35%, #9bffad, #18a843 70%);
+    }
+    .planet.small-pink {
+      width: 40px; height: 40px; right: 96px; top: 24px;
+      background: radial-gradient(circle at 35% 35%, #fcb4ff, #b22cff 70%);
+      font-size: 11px;
+    }
+    .planet.small-orange {
+      width: 42px; height: 42px; left: 102px; bottom: 10px;
+      background: radial-gradient(circle at 35% 35%, #ffd6a3, #ff7a00 70%);
+      font-size: 11px;
+    }
+ 
+    .section-title {
+      font-size: 54px;
+      text-align: center;
+      font-weight: 900;
+      margin: 4px 0 16px;
+      letter-spacing: 1px;
+      text-shadow: 0 0 20px rgba(183, 120, 255, 0.45);
+    }
+ 
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+ 
+    .stat {
+      background: rgba(16, 16, 34, 0.75);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 10px 12px;
+      min-height: 68px;
+    }
+ 
+    .stat-top {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+ 
+    .stat-main {
+      font-size: 24px;
+      font-weight: 900;
+    }
+ 
+    .stat-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+ 
+    .board {
+      background: rgba(6, 9, 24, 0.64);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 26px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+ 
+    .action-title {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 900;
+      margin: 18px 0 6px;
+    }
+ 
+    .game-id {
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+ 
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+ 
+    .icon-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(13, 16, 35, .86);
+      color: #fff;
+      font-size: 22px;
+      cursor: pointer;
+    }
+ 
+    .center-chip {
+      flex: 1;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(13, 16, 35, .86);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+ 
+    .bottom-nav {
+      position: sticky;
+      bottom: 10px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      background: rgba(12, 16, 30, 0.88);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 24px;
+      padding: 10px;
+      margin-top: 20px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+ 
+    .nav-item {
+      border: 0;
+      background: transparent;
+      color: #d6d5ef;
+      padding: 10px 6px;
+      border-radius: 18px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+ 
+    .nav-item.active {
+      background: radial-gradient(circle at 50% 0%, rgba(255,196,53,.35), transparent 60%), rgba(255,255,255,.06);
+      color: #fff;
+      box-shadow: inset 0 0 0 1px rgba(255,210,102,.18);
+    }
+ 
+    .back-home {
+      margin-top: 16px;
+      width: 100%;
+      border: 0;
+      border-radius: 18px;
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+ 
+    @media (max-width: 420px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+      .mock-wrap {
+        order: -1;
+      }
+      .title, .section-title {
+        font-size: 36px;
+      }
+      .hero-label {
+        font-size: 36px;
+      }
+      .wheel-shell, .funnel-shell {
+        width: 220px;
+        height: 220px;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="app">
-    <!-- Home Screen -->
-    <section id="screen-home">
-      <h1>PvP Игра</h1>
-
-      <div class="card">
-        <h2>РУЛЕТКА</h2>
-        <p>Классическая PvP Рулетка</p>
-        <button onclick="openScreen('funnels')">Играть</button>
+    <div class="topbar">
+      <button class="pill" id="closeBtn">✕ Закрыть</button>
+      <div class="pill online"><span class="online-dot"></span><span>150 онлайн</span></div>
+      <div class="pill">⋯</div>
+    </div>
+ 
+    <section id="screen-home" class="screen active">
+      <div class="title">PvP Игра</div>
+ 
+      <div class="hero-card">
+        <div class="hero-grid">
+          <div>
+            <div class="hero-label orange">РУЛЕТКА</div>
+            <div class="hero-desc">Классическая<br>PvP Рулетка</div>
+            <button class="big-btn yellow" onclick="openScreen('funnels')">Играть →</button>
+          </div>
+ 
+          <div class="mock-wrap">
+            <div class="wheel-shell">
+              <div class="wheel">
+                <div class="wheel-text w1">@user1<br>45%</div>
+                <div class="wheel-text w2">@user7<br>32%</div>
+                <div class="wheel-text w3">@user_22<br>22%</div>
+                <div class="wheel-text w4">@user3<br>12%</div>
+                <div class="wheel-text w5">@user5<br>8%</div>
+                <div class="wheel-text w6">@user6<br>1%</div>
+              </div>
+              <div class="wheel-pointer"></div>
+              <div class="wheel-center">10:00</div>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <div class="card">
-        <h2>ВОРОНКА</h2>
-        <p>Гравитационная PvP Игра</p>
-        <button onclick="openScreen('voronka')">Играть</button>
+ 
+      <div class="hero-card">
+        <div class="hero-grid">
+          <div>
+            <div class="hero-label purple">ВОРОНКА</div>
+            <div class="hero-desc">Гравитационная<br>PvP Игра</div>
+            <button class="big-btn purple" onclick="openScreen('voronka')">Играть →</button>
+          </div>
+ 
+          <div class="mock-wrap">
+            <div class="funnel-shell">
+              <div class="orbit"></div>
+              <div class="orbit o2"></div>
+              <div class="orbit o3"></div>
+              <div class="orbit o4"></div>
+              <div class="orbit o5"></div>
+ 
+              <div class="planet big-red">@user1<br>100 TON</div>
+              <div class="planet big-yellow">@user9<br>180 TON</div>
+              <div class="planet mid-blue">@user22<br>75 TON</div>
+              <div class="planet green">@user7<br>50 TON</div>
+              <div class="planet small-pink">@user2<br>20</div>
+              <div class="planet small-orange">@user8<br>5</div>
+            </div>
+          </div>
+        </div>
+      </div>
+ 
+      <div class="bottom-nav">
+        <button class="nav-item">Магазин</button>
+        <button class="nav-item active">PvP</button>
+        <button class="nav-item">Solo</button>
+        <button class="nav-item">Earn</button>
+        <button class="nav-item">Профиль</button>
       </div>
     </section>
-
-    <!-- Funnels Screen -->
-    <section id="screen-funnels" style="display:none">
-      <h1>FUNNELS</h1>
-      <p>Экран рулетки</p>
-      <button onclick="openScreen('home')">Назад</button>
+ 
+    <section id="screen-funnels" class="screen">
+      <div class="section-title">FUNNELS</div>
+ 
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-top">@M98hkg</div>
+          <div class="stat-main">+222 TON</div>
+          <div class="stat-sub">ПРЕД. ИГРА</div>
+        </div>
+        <div class="stat">
+          <div class="stat-top">@lapdwasd</div>
+          <div class="stat-main">+50882 TON</div>
+          <div class="stat-sub">ТОП ИГРА</div>
+        </div>
+        <div class="stat">
+          <div class="stat-top">ШАНС</div>
+          <div class="stat-main">99%</div>
+          <div class="stat-sub">ЛУЧШИЙ</div>
+        </div>
+      </div>
+ 
+      <div class="toolbar">
+        <button class="icon-btn">↺</button>
+        <div class="center-chip">ВСЕГО 0 TON</div>
+        <button class="icon-btn">⌕</button>
+      </div>
+ 
+      <div class="board">
+        <div class="mock-wrap">
+          <div class="wheel-shell" style="width:290px;height:290px;">
+            <div class="wheel">
+              <div class="wheel-text w1">@user1<br>45%</div>
+              <div class="wheel-text w2">@user7<br>32%</div>
+              <div class="wheel-text w3">@user_22<br>22%</div>
+              <div class="wheel-text w4">@user3<br>12%</div>
+              <div class="wheel-text w5">@user5<br>8%</div>
+              <div class="wheel-text w6">@user6<br>1%</div>
+            </div>
+            <div class="wheel-pointer"></div>
+            <div class="wheel-center">10:00</div>
+          </div>
+        </div>
+ 
+        <div class="action-title">⚔ PvP начался</div>
+        <div class="game-id">ИГРА #1</div>
+      </div>
+ 
+      <button class="back-home" onclick="openScreen('home')">← Назад</button>
+ 
+      <div class="bottom-nav">
+        <button class="nav-item">Магазин</button>
+        <button class="nav-item active">PvP</button>
+        <button class="nav-item">Solo</button>
+        <button class="nav-item">Earn</button>
+        <button class="nav-item">Профиль</button>
+      </div>
     </section>
-
-    <!-- Voronka Screen -->
-    <section id="screen-voronka" style="display:none">
-      <h1>ВОРОНКА</h1>
-      <p>Экран воронки</p>
-      <button onclick="openScreen('home')">Назад</button>
+ 
+    <section id="screen-voronka" class="screen">
+      <div class="section-title">ВОРОНКА</div>
+ 
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-top">@_______</div>
+          <div class="stat-main">356</div>
+          <div class="stat-sub">ПРЕД. ИГРА</div>
+        </div>
+        <div class="stat">
+          <div class="stat-top">ИГРОКИ</div>
+          <div class="stat-main">350</div>
+          <div class="stat-sub">ОНЛАЙН</div>
+        </div>
+        <div class="stat">
+          <div class="stat-top">@_____</div>
+          <div class="stat-main">501 TON</div>
+          <div class="stat-sub">БАНК</div>
+        </div>
+      </div>
+ 
+      <div class="toolbar">
+        <div class="center-chip">@username</div>
+        <div class="center-chip">TON 0</div>
+        <button class="icon-btn">⌕</button>
+      </div>
+ 
+      <div class="board">
+        <div class="mock-wrap">
+          <div class="funnel-shell" style="width:300px;height:300px;">
+            <div class="orbit"></div>
+            <div class="orbit o2"></div>
+            <div class="orbit o3"></div>
+            <div class="orbit o4"></div>
+            <div class="orbit o5"></div>
+ 
+            <div class="planet big-red">@user1<br>100 TON</div>
+            <div class="planet big-yellow">@user9<br>180 TON</div>
+            <div class="planet mid-blue">@user22<br>75 TON</div>
+            <div class="planet green">@user7<br>50 TON</div>
+            <div class="planet small-pink">@user2<br>20</div>
+            <div class="planet small-orange">@user8<br>5</div>
+          </div>
+        </div>
+ 
+        <div class="action-title">⚔ PvP началось</div>
+      </div>
+ 
+      <button class="back-home" onclick="openScreen('home')">← Назад</button>
+ 
+      <div class="bottom-nav">
+        <button class="nav-item">Магазин</button>
+        <button class="nav-item active">PvP</button>
+        <button class="nav-item">Solo</button>
+        <button class="nav-item">Earn</button>
+        <button class="nav-item">Профиль</button>
+      </div>
     </section>
   </div>
-
-<script>
-function openScreen(name){
-  document.getElementById("screen-home").style.display="none";
-  document.getElementById("screen-funnels").style.display="none";
-  document.getElementById("screen-voronka").style.display="none";
-
-  document.getElementById("screen-"+name).style.display="block";
-}
-</script>
-
+ 
+  <script>
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      tg.setHeaderColor("#0b0f1d");
+      tg.setBackgroundColor("#090b17");
+    }
+ 
+    const closeBtn = document.getElementById("closeBtn");
+    closeBtn.addEventListener("click", () => {
+      if (tg) tg.close();
+    });
+ 
+    function openScreen(name) {
+      document.querySelectorAll(".screen").forEach(el => el.classList.remove("active"));
+      document.getElementById(`screen-${name}`).classList.add("active");
+ 
+      if (tg?.BackButton) {
+        if (name === "home") {
+          tg.BackButton.hide();
+        } else {
+          tg.BackButton.show();
+        }
+      }
+    }
+ 
+    if (tg?.BackButton) {
+      tg.BackButton.onClick(() => openScreen("home"));
+    }
+  </script>
 </body>
 </html>
