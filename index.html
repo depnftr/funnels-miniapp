@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Funnels Mini App</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+body{
+background:#111;
+color:white;
+font-family:Arial;
+text-align:center;
+padding-top:100px;
+}
+button{
+padding:15px 25px;
+font-size:18px;
+border-radius:10px;
+border:none;
+background:#2ea6ff;
+color:white;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Funnels</h1>
+<p>Mini App работает</p>
+
+<button onclick="tg.showAlert('Привет из Mini App!')">
+Нажми
+</button>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+</script>
+
+</body>
+</html>
